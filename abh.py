@@ -8,9 +8,6 @@ import re
 import requests
 import json
 
-#import sys
-
-
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -54,21 +51,10 @@ def timer1():
     print(sm)
 
     #if sum all values = 0 - mean nobody home
-    if int(sm) > 0:
+    if sm == 0:
         print('send to Blynk')
+        # value 1 - off
         post_2blynk('V0', '1')
-
-
-
-
-    #stmdata = load_dirty_json(str(stm.raw))
-    #endata = load_dirty_json(str(end.raw))
-
-    #value_d = int(endata['series'][0]['values'][0][1]) - int(stdata['series'][0]['values'][0][1])
-    #value_m = int(endata['series'][0]['values'][0][1]) - int(stmdata['series'][0]['values'][0][1])
-
-    #post_2blynk('V9', str(value_d/1000))
-    #post_2blynk('V10', str(value_m/1000))
 
 
 
