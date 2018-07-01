@@ -11,7 +11,7 @@ import time
 import re
 import requests
 import json
-
+import argparse
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -77,6 +77,10 @@ def on_message(mqttc, userdata, message):
 
 def main():
 
+    parser = argparse.ArgumentParser(description='Towel heater power on/off using anybody home info')
+    parser.add_argument('-power','--power', help='use -power on/off', required=True)
+    args = vars(parser.parse_args())
+
     mqttc = mqtt.Client()
     mqttc.on_connect = on_connect
     mqttc.on_message = on_message
@@ -86,26 +90,29 @@ def main():
     mqttc.connect(MqttHost, MqttPort, 60)
     mqttc.subscribe("heater/power")
 
+    if args['power'] == 'on':
+        query = readInflux("select count(*) from abh where time > now() - 1h tz('Europe/Kiev')")
+        qdata = load_dirty_json(str(query.raw))
+        # print(qdata)
 
-    query = readInflux("select count(*) from abh where time > now() - 1h tz('Europe/Kiev')")
-    qdata = load_dirty_json(str(query.raw))
-    # print(qdata)
+        # list ['2018-06-30T21:34:07.839108789+03:00', 12, 12]
+        # print(qdata['series'][0]['values'][0])
+        list = qdata['series'][0]['values'][0]
+        # sum all values
+        sm = sum(list[1:len(list)])
+        print(sm)
 
-    # list ['2018-06-30T21:34:07.839108789+03:00', 12, 12]
-    # print(qdata['series'][0]['values'][0])
-    list = qdata['series'][0]['values'][0]
-    # sum all values
-    sm = sum(list[1:len(list)])
-    print(sm)
+        # if sum all values = 0 - mean nobody home
+        # TODO
+        # 1. Merge with blink. Create project add disable switch: enable/disable autopoweroff
+        if sm > 0:
+            print('send POWER ON to Mqtt')
+            mqttc.publish("heater/power", "1", retain=True)
+            # value 1 - on
 
-    # if sum all values = 0 - mean nobody home
-    # TODO
-    # 1. Merge with blink. Create project add disable switch: enable/disable autopoweroff
-    if sm > 0:
-        print('send to Mqtt')
-        mqttc.publish("heater/power", "1", retain=True)
-        # value 1 - on
-
+    if args['power'] == 'off':
+        print('send POWER OFF to Mqtt')
+        mqttc.publish("heater/power", "0", retain=True)
 
     #mqttc.loop_forever()
     #time.sleep(20)
