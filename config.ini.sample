@@ -6,7 +6,11 @@ InfluxDBUser = user
 InfluxDBPass = pass
 InfluxDBDatabase = db
 
-
 BlynkUrl    = http://127.0.0.1
 BlynkPort   = 8080
 BlynkToken  = token_hash
+
+MqttHost    = 127.0.0.1
+MqttPort    = 1883
+MqttUser    = user
+MqttPass    = pass
