@@ -64,14 +64,16 @@ def timer1():
         #check anybody home last 30m
         query = readInflux("select count(*) from abh where time > now() - 30m tz('Europe/Kiev')")
         qdata = load_dirty_json(str(query.raw))
-        # print(qdata)
 
         # list ['2018-06-30T21:34:07.839108789+03:00', 12, 12]
         # print(qdata['series'][0]['values'][0])
-        list = qdata['series'][0]['values'][0]
-        # sum all values
-        sm = sum(list[1:len(list)])
-        #print(sm)
+        if len(query) > 0:
+            list = qdata['series'][0]['values'][0]
+            # sum all values
+            sm = sum(list[1:len(list)])
+            #print(sm)
+        else:
+            sm = 0
 
         # if sum all values = 0 - mean nobody home
         # 1. should check state first.
@@ -154,7 +156,7 @@ def readInflux(query):
 def main():
 
     scheduler = BackgroundScheduler()
-    scheduler.add_job(timer1, 'interval', seconds=5)
+    scheduler.add_job(timer1, 'interval', seconds=30)
     scheduler.start()
 
 
