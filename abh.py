@@ -58,22 +58,36 @@ def timer1():
     # response string ["0"] or ["1"]
     #print(autopower)
     #print(powerstate)
-
+    sm = 0
+    result = ''
     if autopower == 1:
 
         #check anybody home last 30m
         query = readInflux("select count(*) from abh where time > now() - 30m tz('Europe/Kiev')")
-        qdata = load_dirty_json(str(query.raw))
+        for item in query.get_points():
+            result = item
+
+        print(result)
+
+        for key in result:
+            #print(result[key])
+            if key != 'time' and str(result[key]) != 'None':
+                #print(result[key])
+                sm = sm + result[key]
+
+        print(sm)
+        #qdata = load_dirty_json(str(query.raw))
+        #print(query)
 
         # list ['2018-06-30T21:34:07.839108789+03:00', 12, 12]
         # print(qdata['series'][0]['values'][0])
-        if len(query) > 0:
-            list = qdata['series'][0]['values'][0]
-            # sum all values
-            sm = sum(list[1:len(list)])
-            #print(sm)
-        else:
-            sm = 0
+        # if len(query) > 0:
+        #     list = qdata['series'][0]['values'][0]
+        #     # sum all values
+        #     sm = sum(list[1:len(list)])
+        #     #print(sm)
+        # else:
+        #     sm = 0
 
         # if sum all values = 0 - mean nobody home
         # 1. should check state first.
